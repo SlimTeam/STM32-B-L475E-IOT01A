@@ -1,0 +1,62 @@
+diff -ENwbur Projects/Common/GenericMQTT/Src/GenericMQTTXcubeSample.c Projects/Common/GenericMQTT/Src/GenericMQTTXcubeSample.c
+--- STM32CubeExpansion_Cloud_CLD_GEN_V1.0.0.original/Projects/Common/GenericMQTT/Src/GenericMQTTXcubeSample.c	2018-03-28 15:11:02.000000000 +0300
++++ STM32CubeExpansion_Cloud_CLD_GEN_V1.1.0/Projects/Common/GenericMQTT/Src/GenericMQTTXcubeSample.c	2019-03-22 10:59:11.786137000 +0200
+@@ -112,6 +112,8 @@
+   char *MQClientId;
+   char *MQUserName;
+   char *MQUserPwd;
++  char *PublicationTopic;
++  char *SubscriptionTopic;
+ #ifdef LITMUS_LOOP
+   char *LoopTopicId;
+ #endif
+@@ -163,8 +165,8 @@
+          "template for MQTT TLS/SSL connection, without Litmus Loop server authentication: HostName=xxx;HostPort=xxx;ConnSecurity=1;MQClientId=xxx;MQUserName=xxx;MQUserPwd=xxx;LoopTopicId=xxx;\n"
+          "template for MQTT TLS/SSL connection, with Litmus Loop server authentication:    HostName=xxx;HostPort=xxx;ConnSecurity=2;MQClientId=xxx;MQUserName=xxx;MQUserPwd=xxx;LoopTopicId=xxx;\n");
+ #else
+-         "template with MQTT authentication:    HostName=xxx;HostPort=xxx;ConnSecurity=x;MQClientId=xxx;MQUserName=xxx;MQUserPwd=xxx;\n"
+-         "template without MQTT authentication: HostName=xxx;HostPort=xxx;ConnSecurity=x;MQClientId=xxx;\n");
++         "template with MQTT authentication:    HostName=xxx;HostPort=xxx;ConnSecurity=x;MQClientId=xxx;MQUserName=xxx;MQUserPwd=xxx;PublicationTopic=xxx;SubscriptionTopic=xxx;\n"
++         "template without MQTT authentication: HostName=xxx;HostPort=xxx;ConnSecurity=x;MQClientId=xxx;PublicationTopic=xxx;SubscriptionTopic=xxx;\n");
+ #endif /* LITMUS_LOOP */
+ 
+   getInputString(iot_config.device_name, USER_CONF_DEVICE_NAME_LENGTH);
+@@ -483,7 +485,7 @@
+ #elif defined(UBIDOTS_MQTT)
+           snprintf(mqtt_subtopic, MQTT_TOPIC_BUFFER_SIZE, "/v1.6/devices/%s/ts/lv", device_config->MQClientId); /* Subscribe the timestamp latest value */
+ #else
+-          snprintf(mqtt_subtopic, MQTT_TOPIC_BUFFER_SIZE, "/devices/%s/control", device_config->MQClientId);
++          snprintf(mqtt_subtopic, MQTT_TOPIC_BUFFER_SIZE, device_config->SubscriptionTopic); // e.g. UzIyQTgwRjc2Ng==/mosquitto/message
+ #endif /* LITMUS_LOOP */
+           ret = MQTTSubscribe(&client, mqtt_subtopic, QOS0, (allpurposeMessageHandler));
+         }
+@@ -637,7 +639,7 @@
+                  );
+ 
+ #else /* ! LITMUS_LOOP */
+-              snprintf(mqtt_pubtopic, MQTT_TOPIC_BUFFER_SIZE, "/sensors/%s", device_config->MQClientId);
++              snprintf(mqtt_pubtopic, MQTT_TOPIC_BUFFER_SIZE, device_config->PublicationTopic);  // e.g. UzIyQTgwRjc2Ng==/websocketdotorg/message
+               ret = snprintf( mqtt_msg, MQTT_MSG_BUFFER_SIZE, "{\n \"state\": {\n  \"reported\": {\n"
+ 
+ #ifdef SENSOR
+@@ -867,6 +869,8 @@
+       ret |= string_allocate_from_token(&config->MQClientId, "MQClientId=", string);
+       ret |= string_allocate_from_token(&config->MQUserName, "MQUserName=", string);
+       ret |= string_allocate_from_token(&config->MQUserPwd, "MQUserPwd=", string);
++      ret |= string_allocate_from_token(&config->PublicationTopic, "PublicationTopic=", string);
++      ret |= string_allocate_from_token(&config->SubscriptionTopic, "SubscriptionTopic=", string);
+ #ifdef LITMUS_LOOP
+       ret |= string_allocate_from_token(&config->LoopTopicId, "LoopTopicId=", string);
+ #endif
+diff -ENwbur Projects/Common/Shared/Inc/iot_flash_config.h Projects/Common/Shared/Inc/iot_flash_config.h
+--- STM32CubeExpansion_Cloud_CLD_GEN_V1.0.0.original/Projects/Common/Shared/Inc/iot_flash_config.h	2018-03-28 12:51:21.000000000 +0300
++++ STM32CubeExpansion_Cloud_CLD_GEN_V1.1.0/Projects/Common/Shared/Inc/iot_flash_config.h	2019-03-20 20:04:06.387359000 +0200
+@@ -60,7 +60,7 @@
+ #define USER_CONF_WIFI_SSID_MAX_LENGTH  32
+ #define USER_CONF_WIFI_PSK_MAX_LENGTH   64
+ 
+-#define USER_CONF_DEVICE_NAME_LENGTH    300   /**< Must be large enough to hold a complete connection string */
++#define USER_CONF_DEVICE_NAME_LENGTH    400   /**< Must be large enough to hold a complete connection string */
+ #define USER_CONF_SERVER_NAME_LENGTH    128
+ #define USER_CONF_TLS_OBJECT_MAX_SIZE   2048
+ #define USER_CONF_MAGIC                 0x0123456789ABCDEFuLL
