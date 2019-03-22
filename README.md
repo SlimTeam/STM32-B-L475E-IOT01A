@@ -9,7 +9,7 @@ Updated connection string: HostName=xxx;HostPort=xxx;ConnSecurity=x;MQClientId=x
 
 
 ## Installation
-For step by step instructions, check out our [blog entry](https://blog.scriptr.io/[missing-blog-entry])
+For step by step instructions, check out our [blog entry](https://blog.scriptr.io/getting-started-stm32l4-discovery-kit-iot-node-scriptrio/).
 
 ### Binary
 The binary folder contains the builts package based on the modified code.
